@@ -11,21 +11,28 @@ export const login = async (email, password, dispatch) => {
     })
 }
 
-  const response = await fetch("https://ideal-sniffle-p5p455xqxw424px-3001.app.github.dev/api/token", options);
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/token`, options);
 
-  try {
-    if (!response.ok) {
-      throw new Error(response.status);
-    }
-
-    const data = await response.json();
-    console.log(data);
-    // dispatch({
-    //   type: "fetchedToken",
-    //   payload: data,
-    // });
-  } catch (error) {
-    console.error("Error fetching token.", error);
-    return false;
+  if (!response.ok) {
+      const data = await response.json()
+      console.log(data.message)
+      return {
+        error: {
+          status: response.status,
+          statusText: response.statusText
+        }
+      }
   }
+
+  const data = await response.json();
+  sessionStorage.setItem("token", data.access_token)
+  dispatch({
+    type: "fetchedToken",
+    payload: {
+      message: data.message, 
+      token: data.access_token,
+      isLoginSuccessful: true,
+    },
+  });
+  return data;
 };
